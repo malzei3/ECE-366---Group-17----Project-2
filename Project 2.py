@@ -1,6 +1,6 @@
 
 # addi, sub, beq, ori, sw
-
+## WORK ON: lb, sb, bne, srl, add, multu, mfhi, mflo, xor, sll, sltu, lw, 
 
 
 def sim(program):
@@ -92,4 +92,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-© 2019 GitHub, Inc.
