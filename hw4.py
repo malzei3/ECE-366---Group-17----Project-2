@@ -35,13 +35,23 @@ def mipsToBin():
         line = line.replace(" ","")
         line = line.replace("zero","0") # assembly can also use both $zero and $0
 
-        if(line[0:4] == "addi"): # ADDI      addi $t, $s, imm  	   0010 00ss ssst tttt iiii iiii iiii iiii
+                #----------------------------------------------------- ADDIU    addiu $t, $s, imm     0010 01ss ssst tttt iiii iiii iiii iiii
+        if(line[0:5] == "addiu"): 
+            line = line.replace("addiu","")
+            line = line.split(",")
+            imm = format(int(line[2]),'016b')  if (int(line[2]) > 0) else format(65536 + int(line[2]),'016b')
+            rs = format(int(line[1]),'05b')
+            rt = format(int(line[0]),'05b')
+            f.write(str('addiu ') + str('001001') + str(rs) + str(rt) + str(imm) + '\n')
+            line_count += 1
+
+        elif(line[0:4] == "addi"): # ADDI      addi $t, $s, imm  	   0010 00ss ssst tttt iiii iiii iiii iiii
             line = line.replace("addi","")
             line = line.split(",")
             imm = format(int(line[2]),'016b') if (int(line[2]) > 0) else format(65536 + int(line[2]),'016b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[0]),'05b')
-            f.write(str('001000') + str(rs) + str(rt) + str(imm) + '\n')
+            f.write(str('addi ') + str('001000') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
         elif(line[0:3] == "add"): # ADD      add $d, $s, $t     0000 00ss ssst tttt dddd d000 0010 0000
@@ -50,26 +60,7 @@ def mipsToBin():
             rd = format(int(line[0]),'05b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[2]),'05b')
-            f.write(str('000000') + str(rs) + str(rt) + str(rd) + str('00000100000') + '\n')
-            line_count += 1
-
-        #----------------------------------------------------- ADDIU    addiu $t, $s, imm     0010 01ss ssst tttt iiii iiii iiii iiii
-        elif(line[0:5] == "addiu"): 
-            line = line.replace("addiu","")
-            line = line.split(",")
-            imm = format(int(line[2]),'016b')  if (int(line[2]) > 0) else format(65536 + int(line[2]),'016b')
-            rs = format(int(line[1]),'05b')
-            rt = format(int(line[0]),'05b')
-            f.write(str('001001') + str(rs) + str(rt) + str(imm) + '\n')
-            line_count += 1
-
-        #----------------------------------------------------- MULT      mult $s, $t      0000 00ss ssst tttt 0000 0000 0001 1000
-        elif(line[0:4] == "mult"): 
-            line = line.replace("mult","")
-            line = line.split(",")
-            rs = format(int(line[0]),'05b')
-            rt = format(int(line[1]),'05b')
-            f.write(str('000000') + str(rs) + str(rt) + str('0000000000011000') + '\n')
+            f.write(str('add ') + str('000000') + str(rs) + str(rt) + str(rd) + str('00000100000') + '\n')
             line_count += 1
 
          #----------------------------------------------------- multu    multu $s, $t     0000 00ss ssst tttt 0000 0000 0001 1001      
@@ -78,7 +69,16 @@ def mipsToBin():
             line = line.split(",")
             rs = format(int(line[0]),'05b')
             rt = format(int(line[1]),'05b')
-            f.write(str('000000') + str(rs) + str(rt) + str('0000000000011001') + '\n')
+            f.write(str('multu ') + str('000000') + str(rs) + str(rt) + str('0000000000011001') + '\n')
+            line_count += 1
+
+        #----------------------------------------------------- MULT      mult $s, $t      0000 00ss ssst tttt 0000 0000 0001 1000
+        elif(line[0:4] == "mult"): 
+            line = line.replace("mult","")
+            line = line.split(",")
+            rs = format(int(line[0]),'05b')
+            rt = format(int(line[1]),'05b')
+            f.write(str('mult ') + str('000000') + str(rs) + str(rt) + str('0000000000011000') + '\n')
             line_count += 1
 
          #----------------------------------------------------- srl $d, $t, h        0000 00-- ---t tttt dddd dhhh hh00 0010
@@ -88,7 +88,7 @@ def mipsToBin():
             rd = format(int(line[0]),'05b')
             rt = format(int(line[1]),'05b')
             sh = format(int(line[2]),'05b')
-            f.write(str('00000000000') + str(rt) + str(rd) + str(sh) + str('000010') + '\n')
+            f.write(str('srl ') + str('00000000000') + str(rt) + str(rd) + str(sh) + str('000010') + '\n')
             line_count += 1
 
          #----------------------------------------------------- lb         lb $t, offset($s)       1000 00ss ssst tttt iiii iiii iiii iiii  
@@ -98,9 +98,10 @@ def mipsToBin():
             rt = format(int(line[0]),'05b')
             line = line[1]
             line = line.split("(")
+            line[1] = line[1].replace(")", "")
             rs = format(int(line[1]),'05b') 
             imm = format(int(line[0]),'016b')
-            f.write(str('100000') + str(rs) + str(rt) + str(imm) + '\n')
+            f.write(str('lb ') + str('100000') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
          # ----------------------------------------------------- sb         sb $t, offset($s)      1010 00ss ssst tttt iiii iiii iiii iiii
@@ -110,9 +111,10 @@ def mipsToBin():
             rt = format(int(line[0]),'05b')
             line = line[1]
             line = line.split("(")
+            line[1] = line[1].replace(")", "")
             rs = format(int(line[1]),'05b')
             imm = format(int(line[0]),'016b')
-            f.write(str('101000') + str(rs) + str(rt) + str(imm) + '\n')
+            f.write(str('sb ') + str('101000') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
         # ------------------------------------------------------- lw         lw $t, offset($s)       1000 11ss ssst tttt iiii iiii iiii iiii
@@ -122,9 +124,10 @@ def mipsToBin():
             rt = format(int(line[0]), '05b')
             line = line[1]
             line = line.split("(")
+            line[1] = line[1].replace(")", "")
             rs = format(int(line[1]),'05b')
             imm = format(int(line[0]),'016b')
-            f.write(str('100011') + str(rs) + str(rt) + str(imm) + '\n')
+            f.write(str('lw ') + str('100011') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
          # ------------------------------------------------------ sw          sb $t, offset($s)       1010 11ss ssst tttt iiii iiii iiii iiii
@@ -134,9 +137,10 @@ def mipsToBin():
             rt = format(int(line[0]),'05b')
             line = line[1]
             line = line.split("(")
+            line[1] = line[1].replace(")", "")
             rs = format(int(line[1]),'05b')
             imm = format(int(line[0]),'016b')
-            f.write(str('101011') + str(rs) + str(rt) + str(imm) + '\n')
+            f.write(str('sw ') + str('101011') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
         # ------------------------------------------------------ beq        beq $s, $t, offset       0001 00ss ssst tttt iiii iiii iiii iiii
@@ -145,7 +149,7 @@ def mipsToBin():
             line = line.split(",")
             for i in range(len(labelName)):
                 if (labelName[i] == line[2]):
-                    imm_dest = format(int(labelIndex[i], '016b'))
+                    imm_dest = format(int(labelIndex[i]), '016b')
             line_count_bi = format(line_count, '016b')
             imm = int(imm_dest, 2) - int(line_count_bi, 2) - 1
             rs = format(int(line[0]),'05b')
@@ -156,7 +160,7 @@ def mipsToBin():
 
             else:
                 imm_bi = format(imm, '016b')
-            f.write(str('000100') + str(rs) + str(rt) + str(imm_bi) + '\n')
+            f.write(str('beq ') + str('000100') + str(rs) + str(rt) + str(imm_bi) + '\n')
             line_count += 1
 
         # -------------------------------------------------------- bne         bne $s, $t, offset       0001 01ss ssst tttt iiii iiii iiii iiii
@@ -165,7 +169,7 @@ def mipsToBin():
             line = line.split(",")
             for i in range(len(labelName)):
                 if (labelName[i] == line[2]):
-                    imm_dest = format(int(labelIndex[i], '016b'))
+                    imm_dest = format(int(labelIndex[i]), '016b')
             line_count_bi = format(line_count, '016b')
             imm = int(imm_dest, 2) - int(line_count_bi, 2) - 1
             rs = format(int(line[0]),'05b')
@@ -176,7 +180,17 @@ def mipsToBin():
 
             else:
                 imm_bi = format(imm, '016b')
-            f.write(str('000101') + str(rs) + str(rt) + str(imm_bi) + '\n')
+            f.write(str('bne ') + str('000101') + str(rs) + str(rt) + str(imm_bi) + '\n')
+            line_count += 1
+
+        # ------------------------------------------------------------ sltu       sltu $d, $s, $t      0000 00ss ssst tttt dddd d000 0010 1011
+        elif(line[0:4] == "sltu"): 
+            line = line.replace("sltu","")
+            line = line.split(",")
+            rd = format(int(line[0]),'05b')
+            rs = format(int(line[1]),'05b')
+            rt = format(int(line[2]),'05b')
+            f.write(str('sltu ') + str('000000') + str(rs) + str(rt) + str(rd) + str('00000101011') + '\n')
             line_count += 1
 
         # ------------------------------------------------------------ slt         slt $d, $s, $t       0000 00ss ssst tttt dddd d000 0010 1010
@@ -186,16 +200,7 @@ def mipsToBin():
             rd = format(int(line[0]),'05b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[2]),'05b')
-            f.write(str('000000') + str(rs) + str(rt)  + str(rd) + str('00000101010') + '\n')
-            line_count += 1
- 
-        elif(line[0:4] == "sltu"): # sltu       sltu $d, $s, $t      0000 00ss ssst tttt dddd d000 0010 1011
-            line = line.replace("sltu","")
-            line = line.split(",")
-            rd = format(int(line[0]),'05b')
-            rs = format(int(line[1]),'05b')
-            rt = format(int(line[2]),'05b')
-            f.write(str('000000') + str(rs) + str(rt) + str(rd) + str('00000101011') + '\n')
+            f.write(str('slt ') +  str('000000') + str(rs) + str(rt)  + str(rd) + str('00000101010') + '\n')
             line_count += 1
 
         elif(line[0:1] == "j"): # JUMP
@@ -208,13 +213,13 @@ def mipsToBin():
             # We need to save the label destination and its target location
 
             if(line[0].isdigit()): # First,test to see if it's a label or a integer
-                f.write(str('000010') + str(format(int(line[0]),'026b')) + '\n')
+                f.write(str('j ') + str('000010') + str(format(int(line[0]),'026b')) + '\n')
                 line_count += 1
 
             else: # Jumping to label
                 for i in range(len(labelName)):
                     if(labelName[i] == line[0]):
-                        f.write(str('000010') + str(format(int(labelIndex[i]),'026b')) + '\n')
+                        f.write(str('j ') + str('000010') + str(format(int(labelIndex[i]),'026b')) + '\n')
                         line_count += 1
 
     f.close()
