@@ -37,6 +37,27 @@ def mipsToBin():
         line = line.replace(" ","")
         line = line.replace("zero","0") # assembly can also use both $zero and $0
 
+        #----------------------------------------------------- subu
+        if(line[0:5] == "subu"): 
+            line = line.replace("subu","")
+            line = line.split(",")
+            rd = format(int(line[0]),'05b')
+            rs = format(int(line[1]),'05b')
+            rt = format(int(line[2]),'05b')
+            f.write(str('000000') + str(rs) + str(rt) + str(rd) + str('00000100011') + '\n')
+            line_count += 1
+
+
+        #----------------------------------------------------- sub
+        if(line[0:5] == "sub"): 
+            line = line.replace("sub","")
+            line = line.split(",")
+            rd = format(int(line[0]),'05b')
+            rs = format(int(line[1]),'05b')
+            rt = format(int(line[2]),'05b')
+            f.write(str('000000') + str(rs) + str(rt) + str(rd) + str('00000100010') + '\n')
+            line_count += 1
+
         #----------------------------------------------------- ADDIU    addiu $t, $s, imm     0010 01ss ssst tttt iiii iiii iiii iiii
         if(line[0:5] == "addiu"): 
             line = line.replace("addiu","")
