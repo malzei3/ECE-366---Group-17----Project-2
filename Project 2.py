@@ -95,6 +95,7 @@ def sim(program):
             # Compare the registers and decide if jumping or not
             if register[s] != register[t]:
                 PC += imm*4
+
         elif fetch[0:6] == '000000' and fetch[21:32] == '00000011001': # MULTU
             PC += 4
             s = int(fetch[6:11],2)
