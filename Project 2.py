@@ -25,7 +25,7 @@ def sim(program):
             imm = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             register[t] = register[s] + imm
             
-        elif fetch[0:6] == '000000' and fetch[21:32] == '00000100010': # SUB
+        elif fetch[0:6] == '100010' and fetch[21:32] == '00000100010': # SUB
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
@@ -55,28 +55,38 @@ def sim(program):
             offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             offset = offset + register[s]
             mem[offset] = register[t]
-		elif fetch[0:6] == '101000':   # SB
-           PC += 4
-           s = int(fetch[6:11],2)
-           t = int(fetch[11:16],2)
-           offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
-           offset = offset + register[s]
-           mem[offset] = register[t]
+        elif fetch[0:6] == '101011':  # lb
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
+            offset = offset + register[s]
+            mem[offset] = register[t]
+		elif fetch[0:6] == '101000':   #SB
+        PC += 4
+        s = int(fetch[6:11],2)
+        t = int(fetch[11:16],2)
+        offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
+        offset = offset + register[s]
+        mem[offset] = register[t]
+        elif fetch[0:6] == '001111': # LUI
+            PC += 4
+            rt = int(fetch[11:16],2)
+            i = int(fetch[16:32],2)           #from bits 16-32 = 0
+            register[rt] = i * power(2,16)    #from bits 0-16 = i
+                                             
 		elif fetch[0:6] == '000000' and fetch[21:32] == '00000100000': # ADD
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
             d = int(fetch[16:21],2)
             register[d] = register[s] + register[t]
-		elif fetch[0:6] == '000000' and fetch[21:32] == '00000100110': # XOR
+		 elif fetch[0:6] == '000000' and fetch[21:32] == '00000100110': # XOR
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
             d = int(fetch[16:21],2)
-            if register[s] != register[t]:
-			register[d] = 1
-			else: 
-			register[d] = 0
+            register[d] = (register[s] ^ register[t])
 		elif fetch[0:6] == '000101':  # BNE
             PC += 4
             s = int(fetch[6:11],2)
