@@ -1,12 +1,13 @@
 
 # addi, sub, beq, ori, sw
-# WORK ON: lb, sb-, bne-, srl, add-, multu, mfhi, mflo, xor-, sll, sltu, lw,lui
+# WORK ON: lb, sb, bne-, srl, add-, multu, mfhi, mflo, xor-, sll, sltu, lw,lui-
 
 
 def sim(program):
     finished = False      # Is the simulation finished? 
     hi = 0
 	lo = 0
+	hilo = [0] * 64
 	PC = 0                # Program Counter
     register = [0] * 32   # Let's initialize 32 empty registers
     mem = [0] * 12288     # Let's initialize 0x3000 or 12288 spaces in memory. I know this is inefficient...
@@ -100,9 +101,19 @@ def sim(program):
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2) 
-
-
-        else:
+		    hilo = register[s] * register[t]
+			lo = hilo[0:31]
+			hi = hilo[32:64]
+        elif fetch[0:6] == '000000' and fetch[21:32] == '00000010010': # MFLO
+            PC += 4
+			d = int(fetch[16:21],2)
+			register[d] = lo
+		elif fetch[0:6] == '000000' and fetch[21:32] == '00000010001': # MFHI
+			PC += 4
+			d = int(fetch[16:21],2)
+			register[d] = hi
+		
+		else:
             # This is not implemented on purpose
             print('Not implemented')
 
