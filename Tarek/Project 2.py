@@ -16,13 +16,17 @@ def saveJumpLabel(asm,labelIndex, labelName):
         asm.remove('\n')
 
 
+# Function to convert mips to binary
 def mipsToBin():
     labelIndex = []
     labelName = []
 
-    f = open("mc.asm","w+")
+    f = open("bin.txt","w+")
 
     h = open("prog.asm","r")
+
+    print("Reading asm file...")
+
     asm = h.readlines()
     line_count = 0
 
@@ -37,8 +41,17 @@ def mipsToBin():
         line = line.replace(" ","")
         line = line.replace("zero","0") # assembly can also use both $zero and $0
 
+        #----------------------------------------------------- ori
+        if(line[0:3] == "ori"): 
+            line = line.replace("ori","")
+            line = line.split(",")
+            imm = format(int(line[2]),'016b') if (int(line[2]) > 0) else format(65536 + int(line[2]),'016b')
+            rs = format(int(line[1]),'05b')
+            rt = format(int(line[0]),'05b')
+            f.write(str('001101') + str(rs) + str(rt) + str(imm) + '\n')
+
         #----------------------------------------------------- or
-        if(line[0:5] == "or"): 
+        if(line[0:2] == "or"): 
             line = line.replace("or","")
             line = line.split(",")
             rd = format(int(line[0]),'05b')
@@ -47,8 +60,18 @@ def mipsToBin():
             f.write(str('000000') + str(rs) + str(rt) + str(rd) + str('00000100101') + '\n')
             line_count += 1
 
+        #----------------------------------------------------- xor
+        if(line[0:3] == "xor"): 
+            line = line.replace("xor","")
+            line = line.split(",")
+            rd = format(int(line[0]),'05b')
+            rs = format(int(line[1]),'05b')
+            rt = format(int(line[2]),'05b')
+            f.write(str('000000') + str(rs) + str(rt) + str(rd) + str('-----100110') + '\n')
+            line_count += 1
+
         #----------------------------------------------------- subu
-        if(line[0:5] == "subu"): 
+        if(line[0:4] == "subu"): 
             line = line.replace("subu","")
             line = line.split(",")
             rd = format(int(line[0]),'05b')
@@ -59,7 +82,7 @@ def mipsToBin():
 
 
         #----------------------------------------------------- sub
-        if(line[0:5] == "sub"): 
+        if(line[0:3] == "sub"): 
             line = line.replace("sub","")
             line = line.split(",")
             rd = format(int(line[0]),'05b')
@@ -78,7 +101,8 @@ def mipsToBin():
             f.write(str('001001') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
-        elif(line[0:4] == "addi"): # ADDI      addi $t, $s, imm  	   0010 00ss ssst tttt iiii iiii iiii iiii
+        #-----------------------------------------------------  ADDI      addi $t, $s, imm  	   0010 00ss ssst tttt iiii iiii iiii iiii
+        elif(line[0:4] == "addi"): 
             line = line.replace("addi","")
             line = line.split(",")
             imm = format(int(line[2]),'016b') if (int(line[2]) > 0) else format(65536 + int(line[2]),'016b')
@@ -87,7 +111,8 @@ def mipsToBin():
             f.write(str('001000') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
-        elif(line[0:3] == "add"): # ADD      add $d, $s, $t     0000 00ss ssst tttt dddd d000 0010 0000
+         #-----------------------------------------------------  ADD      add $d, $s, $t     0000 00ss ssst tttt dddd d000 0010 0000
+        elif(line[0:3] == "add"):
             line = line.replace("add","")
             line = line.split(",")
             rd = format(int(line[0]),'05b')
@@ -125,7 +150,7 @@ def mipsToBin():
             line_count += 1
 
          #----------------------------------------------------- lb         lb $t, offset($s)       1000 00ss ssst tttt iiii iiii iiii iiii  
-        elif(line[0:2] == "lb"): # lb         lb $t, offset($s)       1000 00ss ssst tttt iiii iiii iiii iiii  
+        elif(line[0:2] == "lb"): 
             line = line.replace("lb","")
             line = line.split(",")
             rt = format(int(line[0]),'05b')
@@ -133,7 +158,7 @@ def mipsToBin():
             line = line.split("(")
             line[1] = line[1].replace(")", "")
             rs = format(int(line[1]),'05b') 
-            imm = format(int(line[0]),'016b')
+            imm = format(int(line[0]),'016b') if (int(line[2]) > 0) else format(65536 + int(line[2]),'016b')
             f.write(str('100000') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
@@ -146,7 +171,7 @@ def mipsToBin():
             line = line.split("(")
             line[1] = line[1].replace(")", "")
             rs = format(int(line[1]),'05b')
-            imm = format(int(line[0]),'016b')
+            imm = format(int(line[0]),'016b') if (int(line[0]) > 0) else format(65536 + int(line[0]),'016b')
             f.write(str('101000') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
@@ -159,7 +184,7 @@ def mipsToBin():
             line = line.split("(")
             line[1] = line[1].replace(")", "")
             rs = format(int(line[1]),'05b')
-            imm = format(int(line[0]),'016b')
+            imm = format(int(line[0]),'016b') if (int(line[0]) > 0) else format(65536 + int(line[0]),'016b')
             f.write(str('100011') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
@@ -172,7 +197,7 @@ def mipsToBin():
             line = line.split("(")
             line[1] = line[1].replace(")", "")
             rs = format(int(line[1]),'05b')
-            imm = format(int(line[0]),'016b')
+            imm = format(int(line[0]),'016b') if (int(line[0]) > 0) else format(65536 + int(line[0]),'016b')
             f.write(str('101011') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
@@ -236,6 +261,7 @@ def mipsToBin():
             f.write(str('000000') + str(rs) + str(rt)  + str(rd) + str('00000101010') + '\n')
             line_count += 1
 
+        # ------------------------------------------------------------ Jump
         elif(line[0:1] == "j"): # JUMP
             line = line.replace("j","")
             line = line.split(",")
@@ -257,10 +283,13 @@ def mipsToBin():
 
     f.close()
 
+    print("A text file has been created contains the mips instruction in binary code.\nPress Enter to Continue....")
+    input()
+
     return f
 
 
-
+# Function reads binary code instruction
 def sim(program):
     finished = False      # Is the simulation finished? 
     PC = 0                # Program Counter
@@ -275,22 +304,26 @@ def sim(program):
             break
         fetch = program[PC]
         DIC += 1
+
         #print(hex(int(fetch,2)), PC)
-        if fetch[0:6] == '001000': # ADDI
+        # ----------------------------------------------------------------------------------------------- ADDI Done!
+        if fetch[0:6] == '001000': 
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
             imm = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             register[t] = register[s] + imm
-            
-        elif fetch[0:6] == '000000' and fetch[21:32] == '00000100010': # SUB
+        
+        # ----------------------------------------------------------------------------------------------- SUB Done!
+        elif fetch[0:6] == '000000' and fetch[21:32] == '00000100010': 
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
             d = int(fetch[16:21],2)
             register[d] = register[s] - register[t]
-            
-        elif fetch[0:6] == '000100':  # BEQ
+
+        # ----------------------------------------------------------------------------------------------- BEQ Done!
+        elif fetch[0:6] == '000100':  
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
@@ -298,7 +331,8 @@ def sim(program):
             # Compare the registers and decide if jumping or not
             if register[s] == register[t]:
                 PC += imm*4
-        
+
+        # ----------------------------------------------------------------------------------------------- ORI Done!
         elif fetch[0:6] == '001101':   # ORI
             PC += 4
             s = int(fetch[6:11],2)
@@ -306,6 +340,7 @@ def sim(program):
             imm = int(fetch[16:],2)
             register[t] = register[s] | imm
 
+        # ----------------------------------------------------------------------------------------------- SW Done!
         elif fetch[0:6] == '101011':  # SW
             PC += 4
             s = int(fetch[6:11],2)
@@ -314,22 +349,47 @@ def sim(program):
             offset = offset + register[s]
             mem[offset] = register[t]
 
+        #------------------------------------------------------------------------------------------------ ADD Done!
+        elif fetch[0:6] == '000000' and fetch[21:32] == '00000100000': # ADD
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            d = int(fetch[16:21],2)
+            register[d] = register[s] + register[t]
+
+        #--------------------------------------------------------------------------------------------------- BNE Done!
+        elif fetch[0:6] == '000101':  # BNE
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            imm = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
+            # Compare the registers and decide if jumping or not
+            if register[s] != register[t]:
+                PC += imm*4
+
+        # --------------------------------------------------------------------------------------------------- XOR Done!
+        elif fetch[0:6] == '000000' and fetch[21:32] == '-----100110': 
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            d = int(fetch[16:21],2)
+            register[d] = (register[s] ^ register[t])
+                                             
+
         else:
             # This is not implemented on purpose
             print('Not implemented')
 
     # Finished simulations. Let's print out some stats
-    print('***Simulation finished***')
-    print('Registers $8 - $23 ', register[8:23])
-    print('Dynamic Instr Count ', DIC)
-    print('Memory contents 0x2000 - 0x2050 ', mem[8192:8272])
-
-
+    print('***Simulation finished***\n')
+    print('Registers $8 - $23 \n', register[8:23])
+    print('\nDynamic Instr Count ', DIC)
+    print('\nMemory contents 0x2000 - 0x2050 ', mem[2000:2050])
 
 
 def main():
     mipsToBin()
-    file = open('mc.asm')
+    file = open('bin.txt')
 
     program = []
     for line in file:
