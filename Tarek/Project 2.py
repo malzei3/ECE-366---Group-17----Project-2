@@ -430,6 +430,34 @@ def sim(program):
             imm = int(fetch[16:],2)
             register[t] = imm * 65536
 
+        # --------------------------------------------------------------------------------------------------- sltu done!
+        elif fetch[0:6] == '000000' and fetch[21:32] == '00000101011': # sltu
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            d = int(fetch[16:21],2)
+            regS = register[s]
+            regT = register[t]
+            if regS < 0:
+                regS = regS * -1
+            if regT < 0:
+                regT = regT * -1
+            if regS < regT:
+                register[d] = 1
+            else:
+                register[d] = 0
+
+        # --------------------------------------------------------------------------------------------------- slt done!
+        elif fetch[0:6] == '000000' and fetch[21:32] == '00000101010':
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            d = int(fetch[16:21],2)
+            if register[s] < register[t]:
+                register[d] = 1
+            else:
+                register[d] = 0
+
         else:
             # This is not implemented on purpose
             print('Not implemented')
