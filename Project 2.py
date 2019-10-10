@@ -55,7 +55,7 @@ def sim(program):
             offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             offset = offset + register[s]
             mem[offset] = register[t]
-        elif fetch[0:6] == '101011':  # lb
+        elif fetch[0:6] == '100000':  # lb
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
@@ -69,11 +69,13 @@ def sim(program):
         offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
         offset = offset + register[s]
         mem[offset] = register[t]
-        elif fetch[0:6] == '001111': # LUI
+        
+        elif fetch[0:6] == '101000':   # LUI
             PC += 4
-            rt = int(fetch[11:16],2)
-            i = int(fetch[16:32],2)           #from bits 16-32 = 0
-            register[rt] = i * power(2,16)    #from bits 0-16 = i
+            t = int(fetch[11:16],2)
+            imm = int(fetch[16:],2)
+            register[t] = imm * 65536
+
                                              
 		elif fetch[0:6] == '000000' and fetch[21:32] == '00000100000': # ADD
             PC += 4
