@@ -220,7 +220,7 @@ def sim(program):
             PC += 4
             t = int(fetch[11:16],2)
             imm = int(fetch[16:],2)
-            register[t] = t * 65536
+            register[t] = imm * 65536
 
 
         elif fetch[0:6] == '101011':  # SW
