@@ -199,7 +199,7 @@ def mipsToBin():
             f.write(str('100011') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
-         # ------------------------------------------------------ sw          sb $t, offset($s)       1010 11ss ssst tttt iiii iiii iiii iiii
+         # ------------------------------------------------------ sw          sw $t, offset($s)       1010 11ss ssst tttt iiii iiii iiii iiii
         elif(line[0:2] == "sw"):
             line = line.replace("sw","")
             line = line.split(",")
@@ -328,8 +328,6 @@ def sim(program):
     hilo = [0] * 64
     hi = 0
     lo = 0
-    lbmem = [0] * 32
-    lbyte = 0
     finished = False      # Is the simulation finished? 
     PC = 0                # Program Counter
     register = [0] * 32   # Let's initialize 32 empty registers
@@ -531,6 +529,17 @@ def sim(program):
             offset = offset + register[s]
             register[t] = mem[offset]
             printInfo(register[8:23],DIC,hi,lo,mem[2000:2050])
+
+        # --------------------------------------------------------------------------------------------------- LB Done!
+        elif fetch[0:6] == '100000':  # LB
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
+            offset = offset + register[s]
+            register[t] = mem[offset]
+            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050])
+
 
 
         else:
