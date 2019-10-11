@@ -1,6 +1,7 @@
 # Author: Trung Le
 # Supported instrs: 
-# addi, sub, beq, ori, sw
+# addi, sub, beq, ori, sw, slt, sltu, LUI, mfhi, mflo, bne, xor, add, sll
+# need to do srl, lw
 
 # Remember where each of the jump label is, and the target location 
 def saveJumpLabel(asm,labelIndex, labelName):
@@ -139,14 +140,24 @@ def mipsToBin():
             f.write(str('000000') + str(rs) + str(rt) + str('0000000000011000') + '\n')
             line_count += 1
 
-         #----------------------------------------------------- srl $d, $t, h        0000 00-- ---t tttt dddd dhhh hh00 0010
+        #----------------------------------------------------- srl $d, $t, h        0000 00-- ---t tttt dddd dhhh hh00 0010
         elif(line[0:3] == "srl"):
             line = line.replace("srl","")
             line = line.split(",")
             rd = format(int(line[0]),'05b')
             rt = format(int(line[1]),'05b')
             sh = format(int(line[2]),'05b')
-            f.write(str('00000000000') + str(rt) + str(rd) + str(sh) + str('000010') + '\n')
+            f.write(str('000000-----') + str(rt) + str(rd) + str(sh) + str('000010') + '\n')
+            line_count += 1
+
+        #----------------------------------------------------- sll
+        elif(line[0:3] == "sll"):
+            line = line.replace("sll","")
+            line = line.split(",")
+            rd = format(int(line[0]),'05b')
+            rt = format(int(line[1]),'05b')
+            sh = format(int(line[2]),'05b')
+            f.write(str('000000-----') + str(rt) + str(rd) + str(sh) + str('000000') + '\n')
             line_count += 1
 
          #----------------------------------------------------- lb         lb $t, offset($s)       1000 00ss ssst tttt iiii iiii iiii iiii  
@@ -261,6 +272,29 @@ def mipsToBin():
             f.write(str('000000') + str(rs) + str(rt)  + str(rd) + str('00000101010') + '\n')
             line_count += 1
 
+        #----------------------------------------------------- mflo
+        if(line[0:4] == "mflo"): 
+            line = line.replace("mflo","")
+            rd = format(int(line),'05b')
+            f.write(str('0000000000000000') + str(rd) + str('00000010010') + '\n')
+            line_count += 1
+
+        #----------------------------------------------------- mfhi
+        if(line[0:4] == "mfhi"): 
+            line = line.replace("mfhi","")
+            rd = format(int(line),'05b')
+            f.write(str('0000000000000000') + str(rd) + str('00000010000') + '\n')
+            line_count += 1
+
+        #------------------------------------------------------------ lui 
+        elif(line[0:3] == "lui"): 
+            line = line.replace("lui","")
+            line = line.split(",")
+            rt = format(int(line[0]),'05b')
+            imm = format(int(line[1]),'016b') if (int(line[0]) > 0) else format(65536 + int(line[0]),'016b')
+            f.write(str('001111-----') + str(rt) + str(imm) + '\n')
+            line_count += 1
+
         # ------------------------------------------------------------ Jump
         elif(line[0:1] == "j"): # JUMP
             line = line.replace("j","")
@@ -291,6 +325,9 @@ def mipsToBin():
 
 # Function reads binary code instruction
 def sim(program):
+    hilo = [0] * 64
+    hi = 0
+    lo = 0
     finished = False      # Is the simulation finished? 
     PC = 0                # Program Counter
     register = [0] * 32   # Let's initialize 32 empty registers
@@ -304,7 +341,6 @@ def sim(program):
             break
         fetch = program[PC]
         DIC += 1
-
         #print(hex(int(fetch,2)), PC)
         # ----------------------------------------------------------------------------------------------- ADDI Done!
         if fetch[0:6] == '001000': 
@@ -374,7 +410,96 @@ def sim(program):
             t = int(fetch[11:16],2)
             d = int(fetch[16:21],2)
             register[d] = (register[s] ^ register[t])
-                                             
+
+        # --------------------------------------------------------------------------------------------------- multu Not working
+        elif fetch[0:6] == '000000' and fetch[21:32] == '00000011001': # MULTU
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2) 
+            hilo = register[s] * register[t]
+            hilo = format(hilo, '064b')
+            lo = int(hilo[32:],2)
+            hi = int(hilo[0:31],2)
+
+        # --------------------------------------------------------------------------------------------------- mflo done!
+        elif fetch[0:6] == '000000' and fetch[21:32] == '00000010010': # MFLO
+            PC += 4
+            d = int(fetch[16:21],2)
+            register[d] = lo
+
+        # --------------------------------------------------------------------------------------------------- mfhi done!
+        elif fetch[0:6] == '000000' and fetch[21:32] == '00000010000': # MFHI
+            PC += 4
+            d = int(fetch[16:21],2)
+            register[d] = hi
+
+        # --------------------------------------------------------------------------------------------------- LUI done!
+        elif fetch[0:11] == '001111-----':   # LUI
+            PC += 4
+            t = int(fetch[11:16],2)
+            imm = int(fetch[16:],2)
+            register[t] = imm * 65536
+
+        # --------------------------------------------------------------------------------------------------- sltu done!
+        elif fetch[0:6] == '000000' and fetch[21:32] == '00000101011': # sltu
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            d = int(fetch[16:21],2)
+            regS = register[s]
+            regT = register[t]
+            if regS < 0:
+                regS = regS * -1
+            if regT < 0:
+                regT = regT * -1
+            if regS < regT:
+                register[d] = 1
+            else:
+                register[d] = 0
+
+        # --------------------------------------------------------------------------------------------------- slt done!
+        elif fetch[0:6] == '000000' and fetch[21:32] == '00000101010':
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            d = int(fetch[16:21],2)
+            if register[s] < register[t]:
+                register[d] = 1
+            else:
+                register[d] = 0
+
+        # --------------------------------------------------------------------------------------------------- sll done!
+        elif fetch[0:11] == '000000-----' and fetch[26:32] == '000000':
+            PC += 4
+            t = int(fetch[11:16],2)
+            d = int(fetch[16:21],2)
+            sh = int(fetch[21:26],2)
+            var = format(register[t], '032b')
+            count = sh
+            while True:
+                if count <= 0:
+                    break
+                var.replace(var[0], '', 1)
+                var = var + '0'
+                count -= 1
+            register[d] = int(var,2)
+
+        # --------------------------------------------------------------------------------------------------- sll done!
+        elif fetch[0:11] == '000000-----' and fetch[26:32] == '000010':
+            PC += 4
+            t = int(fetch[11:16],2)
+            d = int(fetch[16:21],2)
+            sh = int(fetch[21:26],2)
+            var = format(register[t], '032b')
+            count = sh
+            while True:
+                if count <= 0:
+                    break
+                var = var[:-1]
+                var = '0' + var
+                count -= 1
+            register[d] = int(var,2)
+
 
         else:
             # This is not implemented on purpose
@@ -385,6 +510,9 @@ def sim(program):
     print('Registers $8 - $23 \n', register[8:23])
     print('\nDynamic Instr Count ', DIC)
     print('\nMemory contents 0x2000 - 0x2050 ', mem[2000:2050])
+    print('\nhi = ', hi)
+    print('lo = ', lo)
+
 
 
 def main():

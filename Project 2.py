@@ -7,11 +7,16 @@ def sim(program):
     finished = False      # Is the simulation finished? 
     hi = 0
     lo = 0
-    PC = 0                # Program Counter
+	hilo = [0] * 64
+	PC = 0                # Program Counter
+
     register = [0] * 32   # Let's initialize 32 empty registers
     mem = [0] * 12288     # Let's initialize 0x3000 or 12288 spaces in memory. I know this is inefficient...
                           # But my machine has 16GB of RAM, its ok :)
     DIC = 0               # Dynamic Instr Count
+    lbmem = [0] * 32
+    lbyte = 0
+
     while(not(finished)):
         if PC == len(program) - 4: 
             finished = True
@@ -55,14 +60,27 @@ def sim(program):
             offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             offset = offset + register[s]
             mem[offset] = register[t]
-        elif fetch[0:6] == '100000':  # lb
+        elif fetch[0:6] == '101011':  # LW
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
             offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             offset = offset + register[s]
-            mem[offset] = register[t]
-        elif fetch[0:6] == '100011':  # lw
+            register[t] = mem[offset]
+
+        elif fetch[0:6] == '100000':  # LB
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
+            offset = offset + register[s]
+            register[t] = mem[offset]
+            lbmem[24:] = bin(register[t])
+            lbyte = lbmem[24]
+            for (i = 0) in lbmem[i:23]:
+            lbmem[i] = lbyte
+
+        elif fetch[0:6] == '101000':   #SB
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
@@ -70,20 +88,11 @@ def sim(program):
             offset = offset + register[s]
             mem[offset] = register[t]
 
-		elif fetch[0:6] == '101000':   #SB
+        elif fetch[0:6] == '001111': # LUI
             PC += 4
-            s = int(fetch[6:11],2)
-            t = int(fetch[11:16],2)
-            offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
-            offset = offset + register[s]
-            mem[offset] = register[t]
-        
-        elif fetch[0:6] == '101000':   # LUI
-            PC += 4
-            t = int(fetch[11:16],2)
-            imm = int(fetch[16:],2)
-            register[t] = imm * 65536
-
+            rt = int(fetch[11:16],2)
+            i = int(fetch[16:32],2)           #from bits 16-32 = 0
+            register[rt] = i * power(2,16)    #from bits 0-16 = i
                                              
         elif fetch[0:6] == '000000' and fetch[21:32] == '00000100000': # ADD
             PC += 4
@@ -121,7 +130,15 @@ def sim(program):
 			PC += 4
 			d = int(fetch[16:21],2)
 			register[d] = hi
-		
+		elif fetch[0:6] == '000000' and fetch[21:32] == '00000101011': # sltu
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            d = int(fetch[16:21],2)
+            if register[s] < register[t]:
+			register[d] = 1
+			else
+			register[d] = 0
 		else:
             # This is not implemented on purpose
             print('Not implemented')
