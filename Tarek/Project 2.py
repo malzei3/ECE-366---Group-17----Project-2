@@ -420,15 +420,16 @@ def sim(program):
             printInfo(register[8:23],DIC,hi,lo,mem[2000:2050])
 
 
-        # --------------------------------------------------------------------------------------------------- multu Not working
-        elif fetch[0:6] == '000000' and fetch[21:32] == '00000011001': # MULTU
+        # --------------------------------------------------------------------------------------------------- multu is good<--------new
+        elif fetch[0:6] == '000000' and fetch[16:] == '0000000000011001': # MULTU
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2) 
+           
             hilo = register[s] * register[t]
             hilo = format(hilo, '064b')
             lo = int(hilo[32:],2)
-            hi = int(hilo[0:31],2)
+            hi = int(hilo[0:32],2)
             printInfo(register[8:23],DIC,hi,lo,mem[2000:2050])
 
         # --------------------------------------------------------------------------------------------------- mflo done!
@@ -547,7 +548,7 @@ def sim(program):
             offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             offset = offset + register[s]   
             mem[offset] = 255 & register[t]
-
+        
         else:
             # This is not implemented on purpose
             print('Not implemented')
@@ -566,8 +567,6 @@ def printInfo(_register, _DIC, _hi, _lo, _mem):
     print('lo = ', _lo)
     print('\nPress enter to continue.......')
     input()
-
-
 
 def main():
     mipsToBin()
