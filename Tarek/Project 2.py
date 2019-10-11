@@ -540,7 +540,13 @@ def sim(program):
             register[t] = mem[offset]
             printInfo(register[8:23],DIC,hi,lo,mem[2000:2050])
 
-
+        elif fetch[0:6] == '101000':  # SB (stores a byte "four bits" into mem[s + off])  <---------NEW
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
+            offset = offset + register[s]   
+            mem[offset] = 255 & register[t]
 
         else:
             # This is not implemented on purpose

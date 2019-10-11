@@ -79,6 +79,7 @@ def sim(program):
             lbyte = lbmem[24]
             for (i = 0) in lbmem[i:23]:
             lbmem[i] = lbyte
+            
 
         elif fetch[0:6] == '101000':   #SB
             PC += 4
