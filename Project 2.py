@@ -57,7 +57,7 @@ def sim(program):
             offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             offset = offset + register[s]
             mem[offset] = register[t]
-        elif fetch[0:6] == '101011':  # LW
+        elif fetch[0:6] == '100011':  # LW
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
