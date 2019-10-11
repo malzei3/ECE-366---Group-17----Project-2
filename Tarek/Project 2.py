@@ -522,7 +522,7 @@ def sim(program):
             register[d] = int(var,2)
             printInfo(register[8:23],DIC,hi,lo,mem[2000:2050])
 
-        # --------------------------------------------------------------------------------------------------- LW
+        # --------------------------------------------------------------------------------------------------- LW Done!
         elif fetch[0:6] == '100011':  # LW
             PC += 4
             s = int(fetch[6:11],2)
@@ -532,27 +532,6 @@ def sim(program):
             register[t] = mem[offset]
             printInfo(register[8:23],DIC,hi,lo,mem[2000:2050])
 
-
-        elif fetch[0:6] == '100000':  # LB
-            PC += 4
-            s = int(fetch[6:11],2)
-            t = int(fetch[11:16],2)
-            offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
-            offset = offset + register[s]
-            register[t] = mem[offset]
-            lbmem = format(register[t], '032b')
-            lbyte = lbmem[24]
-            i = 0
-            #while True:
-            #    if lbyte == '1':
-            #        lbmem.replace(lbmem[i],'1',1)
-            #    else:
-            #        lbmem.replace(lbmem[i],'0',1)
-            #    i += 1
-            #    if (i == 24):
-            #        break
-            for item in lbmem:
-                item = lbyte
 
         else:
             # This is not implemented on purpose
