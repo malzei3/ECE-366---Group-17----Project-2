@@ -215,6 +215,17 @@ def sim(program):
             offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             offset = offset + register[s]
             mem[offset] = register[t]
+            elif fetch[0:6] == '100000':  # LB
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
+            offset = offset + register[s]
+            register[t] = mem[offset]
+            lbmem[24:] = bin(register[t])
+            lbyte = lbmem[24]
+            for (i = 0) in lbmem[i:23]:
+            lbmem[i] = lbyte
 
         elif fetch[0:6] == '101000':   # LUI
             PC += 4
