@@ -6,14 +6,8 @@
 def sim(program):
     finished = False      # Is the simulation finished? 
     hi = 0
-<<<<<<< HEAD
     lo = 0
     PC = 0                # Program Counter
-=======
-	lo = 0
-	hilo = [0] * 64
-	PC = 0                # Program Counter
->>>>>>> 1c192cc687b58d2874bd6b195beedb64debba32e
     register = [0] * 32   # Let's initialize 32 empty registers
     mem = [0] * 12288     # Let's initialize 0x3000 or 12288 spaces in memory. I know this is inefficient...
                           # But my machine has 16GB of RAM, its ok :)
@@ -68,18 +62,7 @@ def sim(program):
             offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             offset = offset + register[s]
             mem[offset] = register[t]
-<<<<<<< HEAD
-		elif fetch[0:6] == '101000':   #SB
-        PC += 4
-        s = int(fetch[6:11],2)
-        t = int(fetch[11:16],2)
-        offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
-        offset = offset + register[s]
-        mem[offset] = register[t]
-        
-        elif fetch[0:6] == '101000':   # LUI
-=======
-        elif fetch[0:6] == '101000':   #SB
+        elif fetch[0:6] == '100011':  # lw
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
@@ -87,8 +70,15 @@ def sim(program):
             offset = offset + register[s]
             mem[offset] = register[t]
 
-        elif fetch[0:6] == '001111': # LUI
->>>>>>> 028fa6c56ed8439b25d22820a803a0cc72d5682e
+		elif fetch[0:6] == '101000':   #SB
+            PC += 4
+            s = int(fetch[6:11],2)
+            t = int(fetch[11:16],2)
+            offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
+            offset = offset + register[s]
+            mem[offset] = register[t]
+        
+        elif fetch[0:6] == '101000':   # LUI
             PC += 4
             t = int(fetch[11:16],2)
             imm = int(fetch[16:],2)
