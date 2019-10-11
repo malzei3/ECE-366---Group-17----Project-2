@@ -1,7 +1,7 @@
 # Author: Trung Le
 # Supported instrs: 
-# addi, sub, beq, ori, sw, slt, sltu, LUI, mfhi, mflo, bne, xor, add
-# need to do sll, srl, lw
+# addi, sub, beq, ori, sw, slt, sltu, LUI, mfhi, mflo, bne, xor, add, sll
+# need to do srl, lw
 
 # Remember where each of the jump label is, and the target location 
 def saveJumpLabel(asm,labelIndex, labelName):
@@ -147,7 +147,7 @@ def mipsToBin():
             rd = format(int(line[0]),'05b')
             rt = format(int(line[1]),'05b')
             sh = format(int(line[2]),'05b')
-            f.write(str('00000000000') + str(rt) + str(rd) + str(sh) + str('000010') + '\n')
+            f.write(str('000000-----') + str(rt) + str(rd) + str(sh) + str('000010') + '\n')
             line_count += 1
 
         #----------------------------------------------------- sll
@@ -481,6 +481,22 @@ def sim(program):
                     break
                 var.replace(var[0], '', 1)
                 var = var + '0'
+                count -= 1
+            register[d] = int(var,2)
+
+        # --------------------------------------------------------------------------------------------------- sll done!
+        elif fetch[0:11] == '000000-----' and fetch[26:32] == '000010':
+            PC += 4
+            t = int(fetch[11:16],2)
+            d = int(fetch[16:21],2)
+            sh = int(fetch[21:26],2)
+            var = format(register[t], '032b')
+            count = sh
+            while True:
+                if count <= 0:
+                    break
+                var = var[:-1]
+                var = '0' + var
                 count -= 1
             register[d] = int(var,2)
 
