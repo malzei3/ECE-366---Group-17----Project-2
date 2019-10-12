@@ -5,7 +5,7 @@
 from __future__ import print_function
 import os
 
-
+asmCopy = []
 
 # FUNCTION: read input file
 def SelectFile():
@@ -44,6 +44,7 @@ def saveJumpLabel(asm,labelIndex, labelName):
 
 # Function to convert mips to binary
 def mipsToBin():
+    global asmCopy
     labelIndex = []
     labelName = []
 
@@ -70,6 +71,8 @@ def mipsToBin():
 
     saveJumpLabel(asm,labelIndex,labelName) # Save all jump's destinations
     
+    asmCopy = asm
+
     for line in asm:
         line = line.replace("0x","")
         line = line.replace("\n","") # Removes extra chars
@@ -81,7 +84,7 @@ def mipsToBin():
         if(line[0:3] == "ori"): 
             line = line.replace("ori","")
             line = line.split(",")
-            imm = format(int(line[2]),'016b') if (int(line[2]) > 0) else format(65536 + int(line[2]),'016b')
+            imm = format(int(line[2]),'016b') if (int(line[2]) >= 0) else format(65536 + int(line[2]),'016b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[0]),'05b')
             f.write(str('001101') + str(rs) + str(rt) + str(imm) + '\n')
@@ -131,7 +134,7 @@ def mipsToBin():
         if(line[0:5] == "addiu"): 
             line = line.replace("addiu","")
             line = line.split(",")
-            imm = format(int(line[2]),'016b')  if (int(line[2]) > 0) else format(65536 + int(line[2]),'016b')
+            imm = format(int(line[2]),'016b')  if (int(line[2]) >= 0) else format(65536 + int(line[2]),'016b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[0]),'05b')
             f.write(str('001001') + str(rs) + str(rt) + str(imm) + '\n')
@@ -141,7 +144,7 @@ def mipsToBin():
         elif(line[0:4] == "addi"): 
             line = line.replace("addi","")
             line = line.split(",")
-            imm = format(int(line[2]),'016b') if (int(line[2]) > 0) else format(65536 + int(line[2]),'016b')
+            imm = format(int(line[2]),'016b') if (int(line[2]) >= 0) else format(65536 + int(line[2]),'016b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[0]),'05b')
             f.write(str('001000') + str(rs) + str(rt) + str(imm) + '\n')
@@ -204,7 +207,7 @@ def mipsToBin():
             line = line.split("(")
             line[1] = line[1].replace(")", "")
             rs = format(int(line[1]),'05b') 
-            imm = format(int(line[0]),'016b') if (int(line[0]) > 0) else format(65536 + int(line[0]),'016b')
+            imm = format(int(line[0]),'016b') if (int(line[0]) >= 0) else format(65536 + int(line[0]),'016b')
             f.write(str('100000') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
@@ -217,7 +220,7 @@ def mipsToBin():
             line = line.split("(")
             line[1] = line[1].replace(")", "")
             rs = format(int(line[1]),'05b')
-            imm = format(int(line[0]),'016b') if (int(line[0]) > 0) else format(65536 + int(line[0],2),'016b')
+            imm = format(int(line[0]),'016b') if (int(line[0]) >= 0) else format(65536 + int(line[0],2),'016b')
             f.write(str('101000') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
@@ -230,7 +233,7 @@ def mipsToBin():
             line = line.split("(")
             line[1] = line[1].replace(")", "")
             rs = format(int(line[1]),'05b')
-            imm = format(int(line[0]),'016b') if (int(line[0]) > 0) else format(65536 + int(line[0]),'016b')
+            imm = format(int(line[0]),'016b') if (int(line[0]) >= 0) else format(65536 + int(line[0]),'016b')
             f.write(str('100011') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
@@ -243,7 +246,7 @@ def mipsToBin():
             line = line.split("(")
             line[1] = line[1].replace(")", "")
             rs = format(int(line[1]),'05b')
-            imm = format(int(line[0]),'016b') if (int(line[0]) > 0) else format(65536 + int(line[0]),'016b')
+            imm = format(int(line[0]),'016b') if (int(line[0]) >= 0) else format(65536 + int(line[0]),'016b')
             f.write(str('101011') + str(rs) + str(rt) + str(imm) + '\n')
             line_count += 1
 
@@ -599,7 +602,10 @@ def sim(program):
 
 
 def printInfo(_register, _DIC, _hi, _lo, _mem, _PC):
-    print('********************* Instruction Number ' + str(int(_PC/4)) + ' Info: **************************\n')
+    num = int(_PC/4)
+    inst = asmCopy[num-1]
+    inst = inst.replace("\n",'')
+    print('******* Instruction Number ' + str(num) + '. ' + inst + ' : *********\n')
     print('Registers $8 - $23 \n', _register)
     print('\nDynamic Instr Count ', _DIC)
     print('\nMemory contents 0x2000 - 0x2050 ', _mem)
