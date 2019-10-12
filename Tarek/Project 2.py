@@ -15,7 +15,7 @@ def SelectFile():
     # Select  file, default is prog.asm
     while True:
         cktFile = "prog.asm"
-        print("\n Read asm file: use " + cktFile + "?" + " Enter to accept or type filename: ")
+        print("\nRead asm file: use " + cktFile + "?" + " Enter to accept or type filename: ")
         userInput = input()
         if userInput == "":
             userInput = "prog.asm"
@@ -60,7 +60,7 @@ def mipsToBin():
 
     h = open(d,"r")
 
-    print("Reading asm file...")
+    print("\nReading asm file...\n")
 
     asm = h.readlines()
     line_count = 0
@@ -258,12 +258,7 @@ def mipsToBin():
             imm = int(imm_dest, 2) - int(line_count_bi, 2) - 1
             rs = format(int(line[0]),'05b')
             rt = format(int(line[1]),'05b')
-            if (imm < 0):
-                imm = imm -1
-                imm_bi = bin(imm^0b1111111111111111) [3:]
-
-            else:
-                imm_bi = format(imm, '016b')
+            imm_bi = format(imm, '016b')
             f.write(str('000100') + str(rs) + str(rt) + str(imm_bi) + '\n')
             line_count += 1
 
@@ -278,12 +273,7 @@ def mipsToBin():
             imm = int(imm_dest, 2) - int(line_count_bi, 2) - 1
             rs = format(int(line[0]),'05b')
             rt = format(int(line[1]),'05b')
-            if (imm < 0):
-                imm = imm -1
-                imm_bi = bin(imm^0b1111111111111111) [3:]
-
-            else:
-                imm_bi = format(imm, '016b')
+            imm_bi = format(imm, '016b')
             f.write(str('000101') + str(rs) + str(rt) + str(imm_bi) + '\n')
             line_count += 1
 
@@ -352,7 +342,7 @@ def mipsToBin():
 
     f.close()
 
-    print("A text file has been created contains the mips instruction in binary code.\nPress Enter to Continue....")
+    print("A text file has been created contains the mips instruction in binary code.\n\nPress Enter to Continue....")
     input()
 
     return f
@@ -384,7 +374,6 @@ def sim(program):
             t = int(fetch[11:16],2)
             imm = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             register[t] = register[s] + imm
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
         
         # ----------------------------------------------------------------------------------------------- SUB Done!
         elif fetch[0:6] == '000000' and fetch[21:32] == '00000100010': 
@@ -393,18 +382,26 @@ def sim(program):
             t = int(fetch[11:16],2)
             d = int(fetch[16:21],2)
             register[d] = register[s] - register[t]
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         # ----------------------------------------------------------------------------------------------- BEQ Done!
         elif fetch[0:6] == '000100':  
+            g=0
             PC += 4
+            z = fetch
+            if '-' in x:
+                z = z.replace('-','')
+                fetch = z
+                y = 1
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
-            imm = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
+            imm = -(65536 - int(fetch[16:],2)) if fetch[16:]=='1' else int(fetch[16:],2)
             # Compare the registers and decide if jumping or not
-            if register[s] == register[t]:
-                PC += imm*4
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
+            if register[s] != register[t]:
+                if(g==1):
+                    i = imm*4
+                    PC -=i
+                else:
+                    PC += imm*4
 
         # ----------------------------------------------------------------------------------------------- ORI Done!
         elif fetch[0:6] == '001101':   # ORI
@@ -413,7 +410,6 @@ def sim(program):
             t = int(fetch[11:16],2)
             imm = int(fetch[16:],2)
             register[t] = register[s] | imm
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         # ----------------------------------------------------------------------------------------------- SW Done!
         elif fetch[0:6] == '101011':  # SW
@@ -423,7 +419,6 @@ def sim(program):
             offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             offset = offset + register[s]
             mem[offset] = register[t]
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         #------------------------------------------------------------------------------------------------ ADD Done!
         elif fetch[0:6] == '000000' and fetch[21:32] == '00000100000': # ADD
@@ -432,18 +427,26 @@ def sim(program):
             t = int(fetch[11:16],2)
             d = int(fetch[16:21],2)
             register[d] = register[s] + register[t]
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         #--------------------------------------------------------------------------------------------------- BNE Done!
         elif fetch[0:6] == '000101':  # BNE
+            y=0
             PC += 4
+            x = fetch
+            if '-' in x:
+                x = x.replace('-','')
+                fetch = x
+                y = 1
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
-            imm = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
+            imm = -(65536 - int(fetch[16:],2)) if fetch[16:]=='1' else int(fetch[16:],2)
             # Compare the registers and decide if jumping or not
             if register[s] != register[t]:
-                PC += imm*4
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
+                if(y==1):
+                    i = imm*4
+                    PC -=i
+                else:
+                    PC += imm*4
 
         # --------------------------------------------------------------------------------------------------- XOR Done!
         elif fetch[0:6] == '000000' and fetch[21:32] == '-----100110': 
@@ -452,7 +455,6 @@ def sim(program):
             t = int(fetch[11:16],2)
             d = int(fetch[16:21],2)
             register[d] = (register[s] ^ register[t])
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
 
         # --------------------------------------------------------------------------------------------------- multu done!
@@ -465,21 +467,18 @@ def sim(program):
             hilo = format(hilo, '064b')
             lo = int(hilo[32:],2)
             hi = int(hilo[0:32],2)
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         # --------------------------------------------------------------------------------------------------- mflo done!
         elif fetch[0:6] == '000000' and fetch[21:32] == '00000010010': # MFLO
             PC += 4
             d = int(fetch[16:21],2)
             register[d] = lo
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         # --------------------------------------------------------------------------------------------------- mfhi done!
         elif fetch[0:6] == '000000' and fetch[21:32] == '00000010000': # MFHI
             PC += 4
             d = int(fetch[16:21],2)
             register[d] = hi
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         # --------------------------------------------------------------------------------------------------- LUI done!
         elif fetch[0:11] == '001111-----':   # LUI
@@ -487,7 +486,6 @@ def sim(program):
             t = int(fetch[11:16],2)
             imm = int(fetch[16:],2)
             register[t] = imm * 65536
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         # --------------------------------------------------------------------------------------------------- sltu done!
         elif fetch[0:6] == '000000' and fetch[21:32] == '00000101011': # sltu
@@ -503,11 +501,9 @@ def sim(program):
                 regT = regT * -1
             if regS < regT:
                 register[d] = 1
-                printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
             else:
                 register[d] = 0
-                printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         # --------------------------------------------------------------------------------------------------- slt done!
         elif fetch[0:6] == '000000' and fetch[21:32] == '00000101010':
@@ -517,10 +513,8 @@ def sim(program):
             d = int(fetch[16:21],2)
             if register[s] < register[t]:
                 register[d] = 1
-                printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
             else:
                 register[d] = 0
-                printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         # --------------------------------------------------------------------------------------------------- sll done!
         elif fetch[0:11] == '000000-----' and fetch[26:32] == '000000':
@@ -537,7 +531,6 @@ def sim(program):
                 var = var + '0'
                 count -= 1
             register[d] = int(var,2)
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         # --------------------------------------------------------------------------------------------------- srl done!
         elif fetch[0:11] == '000000-----' and fetch[26:32] == '000010':
@@ -554,7 +547,6 @@ def sim(program):
                 var = '0' + var
                 count -= 1
             register[d] = int(var,2)
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         # --------------------------------------------------------------------------------------------------- LW Done!
         elif fetch[0:6] == '100011':  # LW
@@ -564,7 +556,6 @@ def sim(program):
             offset = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             offset = offset + register[s]
             register[t] = mem[offset]
-            printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
 
         # -------------------------------------------------------------------------------------------------- LB
         elif fetch[0:6] == '100000':  # LB
@@ -587,6 +578,7 @@ def sim(program):
                     break
             register[t] = int(lbmem,2)
 
+
         elif fetch[0:6] == '101000':  # SB (stores a byte "four bits" into mem[s + off])  <---------NEW
             PC += 4
             s = int(fetch[6:11],2)
@@ -597,15 +589,17 @@ def sim(program):
         
         else:
             # This is not implemented on purpose
-            print('Not implemented')
+            print('Not implemented\n')
+        
+        printInfo(register[8:23],DIC,hi,lo,mem[8192:8272], PC)
 
     # Finished simulations. Let's print out some stats
     print('***Simulation finished***\n')
-    printInfo(register[8:23],DIC,hi,lo,mem[2000:2050], PC)
+    printInfo(register[8:23],DIC,hi,lo,mem[8192:8272], PC)
 
 
 def printInfo(_register, _DIC, _hi, _lo, _mem, _PC):
-    print('***********Instruction Number ' + str(_DIC) + ' Info:****************\n')
+    print('********************* Instruction Number ' + str(int(_PC/4)) + ' Info: **************************\n')
     print('Registers $8 - $23 \n', _register)
     print('\nDynamic Instr Count ', _DIC)
     print('\nMemory contents 0x2000 - 0x2050 ', _mem)
@@ -636,7 +630,7 @@ def main():
         program.append(0)
 
     # We SHALL start the simulation! 
-    sim(program)     
+    sim(program)
 
 if __name__ == '__main__':
     main()
