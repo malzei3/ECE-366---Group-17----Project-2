@@ -74,7 +74,6 @@ def mipsToBin():
     asmCopy = asm
 
     for line in asm:
-        line = line.replace("0x","")
         line = line.replace("\n","") # Removes extra chars
         line = line.replace("$","")
         line = line.replace(" ","")
@@ -84,6 +83,7 @@ def mipsToBin():
         if(line[0:3] == "ori"): 
             line = line.replace("ori","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             imm = format(int(line[2]),'016b') if (int(line[2]) >= 0) else format(65536 + int(line[2]),'016b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[0]),'05b')
@@ -93,6 +93,7 @@ def mipsToBin():
         if(line[0:2] == "or"): 
             line = line.replace("or","")
             line = line.split(",")
+            ConvertHexToInt(line)
             rd = format(int(line[0]),'05b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[2]),'05b')
@@ -103,6 +104,7 @@ def mipsToBin():
         if(line[0:3] == "xor"): 
             line = line.replace("xor","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rd = format(int(line[0]),'05b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[2]),'05b')
@@ -113,6 +115,7 @@ def mipsToBin():
         if(line[0:4] == "subu"): 
             line = line.replace("subu","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rd = format(int(line[0]),'05b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[2]),'05b')
@@ -124,6 +127,7 @@ def mipsToBin():
         if(line[0:3] == "sub"): 
             line = line.replace("sub","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rd = format(int(line[0]),'05b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[2]),'05b')
@@ -134,6 +138,7 @@ def mipsToBin():
         if(line[0:5] == "addiu"): 
             line = line.replace("addiu","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             imm = format(int(line[2]),'016b')  if (int(line[2]) >= 0) else format(65536 + int(line[2]),'016b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[0]),'05b')
@@ -144,6 +149,7 @@ def mipsToBin():
         elif(line[0:4] == "addi"): 
             line = line.replace("addi","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             imm = format(int(line[2]),'016b') if (int(line[2]) >= 0) else format(65536 + int(line[2]),'016b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[0]),'05b')
@@ -154,6 +160,7 @@ def mipsToBin():
         elif(line[0:3] == "add"):
             line = line.replace("add","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rd = format(int(line[0]),'05b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[2]),'05b')
@@ -164,6 +171,7 @@ def mipsToBin():
         elif(line[0:5] == "multu"): 
             line = line.replace("multu","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rs = format(int(line[0]),'05b')
             rt = format(int(line[1]),'05b')
             f.write(str('000000') + str(rs) + str(rt) + str('0000000000011001') + '\n')
@@ -173,6 +181,7 @@ def mipsToBin():
         elif(line[0:4] == "mult"): 
             line = line.replace("mult","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rs = format(int(line[0]),'05b')
             rt = format(int(line[1]),'05b')
             f.write(str('000000') + str(rs) + str(rt) + str('0000000000011000') + '\n')
@@ -182,6 +191,7 @@ def mipsToBin():
         elif(line[0:3] == "srl"):
             line = line.replace("srl","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rd = format(int(line[0]),'05b')
             rt = format(int(line[1]),'05b')
             sh = format(int(line[2]),'05b')
@@ -192,6 +202,7 @@ def mipsToBin():
         elif(line[0:3] == "sll"):
             line = line.replace("sll","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rd = format(int(line[0]),'05b')
             rt = format(int(line[1]),'05b')
             sh = format(int(line[2]),'05b')
@@ -202,6 +213,7 @@ def mipsToBin():
         elif(line[0:2] == "lb"): 
             line = line.replace("lb","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rt = format(int(line[0]),'05b')
             line = line[1]
             line = line.split("(")
@@ -215,6 +227,7 @@ def mipsToBin():
         elif(line[0:2] == "sb"): 
             line = line.replace("sb","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rt = format(int(line[0]),'05b')
             line = line[1]
             line = line.split("(")
@@ -228,6 +241,7 @@ def mipsToBin():
         elif(line[0:2] == "lw"): 
             line = line.replace("lw", "")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rt = format(int(line[0]), '05b')
             line = line[1]
             line = line.split("(")
@@ -241,6 +255,7 @@ def mipsToBin():
         elif(line[0:2] == "sw"):
             line = line.replace("sw","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rt = format(int(line[0]),'05b')
             line = line[1]
             line = line.split("(")
@@ -254,6 +269,7 @@ def mipsToBin():
         elif(line[0:3] == "beq"): 
             line = line.replace("beq","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             for i in range(len(labelName)):
                 if (labelName[i] == line[2]):
                     imm_dest = format(int(labelIndex[i]), '016b')
@@ -269,6 +285,7 @@ def mipsToBin():
         elif(line[0:3] == "bne"): # bne         bne $s, $t, offset       0001 01ss ssst tttt iiii iiii iiii iiii
             line = line.replace("bne","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             for i in range(len(labelName)):
                 if (labelName[i] == line[2]):
                     imm_dest = format(int(labelIndex[i]), '016b')
@@ -284,6 +301,7 @@ def mipsToBin():
         elif(line[0:4] == "sltu"): 
             line = line.replace("sltu","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rd = format(int(line[0]),'05b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[2]),'05b')
@@ -294,6 +312,7 @@ def mipsToBin():
         elif(line[0:3] == "slt"): 
             line = line.replace("slt","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rd = format(int(line[0]),'05b')
             rs = format(int(line[1]),'05b')
             rt = format(int(line[2]),'05b')
@@ -318,6 +337,7 @@ def mipsToBin():
         elif(line[0:3] == "lui"): 
             line = line.replace("lui","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
             rt = format(int(line[0]),'05b')
             imm = format(int(line[1]),'016b') if (int(line[0]) > 0) else format(65536 + int(line[0]),'016b')
             f.write(str('001111-----') + str(rt) + str(imm) + '\n')
@@ -327,6 +347,7 @@ def mipsToBin():
         elif(line[0:1] == "j"): # JUMP
             line = line.replace("j","")
             line = line.split(",")
+            line = ConvertHexToInt(line)
 
             # Since jump instruction has 2 options:
             # 1) jump to a label
@@ -614,6 +635,23 @@ def printInfo(_register, _DIC, _hi, _lo, _mem, _PC):
     print('\nPC = ', _PC)
     print('\nPress enter to continue.......')
     input()
+
+def ConvertHexToInt(_line):
+    i = ""
+    for item in _line:
+        if "0x" in item:
+            ind = _line.index(item)
+            if "(" in item:
+                i = item.find("(")
+                i = item[i:]
+                item = item.replace(i,"")
+            item = str(int(item, 0))
+            item = item + i
+            _line[ind]=item
+            
+    return _line
+
+
 
 def main():
     mipsToBin()
