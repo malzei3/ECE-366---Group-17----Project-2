@@ -563,6 +563,7 @@ def sim(program):
             d = int(fetch[16:21],2)
             sh = int(fetch[21:26],2)
             var = format(register[t], '032b')
+            var = checkNum(var)
             count = sh
             while True:
                 if count <= 0:
@@ -570,7 +571,6 @@ def sim(program):
                 var = var[:-1]
                 var = '0' + var
                 count -= 1
-            num = checkNum(var)
             register[d] = int(var,2)
 
         # --------------------------------------------------------------------------------------------------- LW Done!
@@ -621,6 +621,7 @@ def sim(program):
     # Finished simulations. Let's print out some stats
     print('***Simulation finished***\n')
     printInfo(register[8:23],DIC,hi,lo,mem[8192:8272], PC)
+    input()
 
 
 def printInfo(_register, _DIC, _hi, _lo, _mem, _PC):
@@ -635,12 +636,22 @@ def printInfo(_register, _DIC, _hi, _lo, _mem, _PC):
     print('lo = ', _lo)
     print('\nPC = ', _PC)
     print('\nPress enter to continue.......')
-    input()
 
 def checkNum(_num):
     if len(_num)>32:
         x = len(_num) - 31
         _num = _num[x:]
+        b = int(_num[15:],2)
+        a = _num[:15]
+        reg1 = int(a,2) * 65536
+        reg1 = format(reg1 | b, "032b")
+        return str(reg1)
+    else:
+        return _num
+
+    
+
+        
 
 
 def ConvertHexToInt(_line):
