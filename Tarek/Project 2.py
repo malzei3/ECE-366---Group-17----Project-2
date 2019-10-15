@@ -432,7 +432,7 @@ def sim(program):
             PC += 4
             s = int(fetch[6:11],2)
             t = int(fetch[11:16],2)
-            imm = int(fetch[16:],2)
+            imm = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             register[t] = register[s] | imm
 
         # ----------------------------------------------------------------------------------------------- SW Done!
@@ -508,7 +508,7 @@ def sim(program):
         elif fetch[0:11] == '001111-----':   # LUI
             PC += 4
             t = int(fetch[11:16],2)
-            imm = int(fetch[16:],2)
+            imm = -(65536 - int(fetch[16:],2)) if fetch[16]=='1' else int(fetch[16:],2)
             register[t] = imm * 65536
 
         # --------------------------------------------------------------------------------------------------- sltu done!
@@ -570,6 +570,7 @@ def sim(program):
                 var = var[:-1]
                 var = '0' + var
                 count -= 1
+            num = checkNum(var)
             register[d] = int(var,2)
 
         # --------------------------------------------------------------------------------------------------- LW Done!
@@ -635,6 +636,12 @@ def printInfo(_register, _DIC, _hi, _lo, _mem, _PC):
     print('\nPC = ', _PC)
     print('\nPress enter to continue.......')
     input()
+
+def checkNum(_num):
+    if len(_num)>32:
+        x = len(_num) - 31
+        _num = _num[x:]
+
 
 def ConvertHexToInt(_line):
     i = ""
